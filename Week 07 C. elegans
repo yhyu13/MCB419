@@ -1,0 +1,37 @@
+EVOVLE
+http://jsbin.com/riberod/6/edit?html,css,js,output
+TESTING
+http://jsbin.com/kazofa/3/edit?html,js,output
+
+TEST Instructions
+
+Test the performance of the 'wander' controller for peak attractant values of 0.1, 1.0 and 10.0. You should typically get fitness values around 300-350 in all three test environments. Each time you click 'run series' will create an entry in the results table below.
+Using the GA tool and the controller that you developed, evolve an optimal gene string. Make sure to copy and paste your controller code into this program. Then copy and paste the evolved gene string into the "Genome" field, make sure the selected controller is 'genetic'. Test the performance of your evolved controller for peak attractant values of 0.1, 1.0 and 10.0. You should typically get fitness values > 800 for all three test conditions.
+Do several independent EVOLVE runs and test the best gene string from each run. Each test will add a new row to the Results table.
+Results Table
+
+Controller	|Genes	|Peak	|Fitness mean (std dev)
+---|---|---|---
+wander|	not applicable|	0.1|	330.27 (145.32)
+wander|	not applicable|	1|	343.49 (165.81)
+wander|	not applicable|	10|	348.07 (153.54)
+genetic|	4.442,-3.758,3.928,0.251	|0.1|	831.12 (28.16)
+genetic|	4.442,-3.758,3.928,0.251	|1|	885.27 (15.67)
+genetic|	4.442,-3.758,3.928,0.251	|10|	726.53 (43.03)
+genetic|	0.433,-8.8,9,0.404	|0.1|	857.21 (20.27)
+genetic|	0.433,-8.8,9,0.404	|1|	896.98 (23.60)
+genetic|	0.433,-8.8,9,0.404	|10|	882.50 (17.90)
+genetic|	3.422,-6.154,6.32,0.312	|0.1|	860.40 (32.48)
+genetic|	3.422,-6.154,6.32,0.312	|1|	894.91 (6.20)
+genetic|	3.422,-6.154,6.32,0.312	|10|	854.81 (26.08)
+
+Questions
+
+*** Please answer the following questions in the body of your email when you submit your assignment.***
+
+1.Gene 0 controls the time constant for the low-pass neuron. What's the typical range of values of gene 0? Try changing this value manually in one of your evolved gene string. What happens if you make it very small (-9)? What happens if you make it relatively large (9)? It's around 0.3 to 4. When genome[0] is small, this implies tau is small as well. Since in the way we code this.v += (this.sns - this.v) / tau, this.v will increase faster than the case when genome[0] is large. This leads to a faster rate of head turning. Usually, bots will keep rotating/turning rather than going straight to a high saturation point.
+2.What is the typical relationship between genes[1] and genes[2]? What are these first two terms of the weighted sum computing? genome[2] is slightly bigger than the opposite value of genome[1]. If this.sns is larger than this.v, means bots locate in a relatively low saturation and they are moving to a high saturation are, w should be negative (because we constrain w to between 0 and 0.2). On the other hand, when bots reach saturation peak, means this.sns == this.v, these first terms give a positive value and lead to constant change in heading.
+3.The last line of the controller code constrains the change in heading direction to be between 0 and 0.2 radians per tick. For what range of weighted sum values would the change in heading be zero? How does this relate to the "run" phase in bacterial run-tumble behavior? When w is negative, the change in heading would be zero. They behave in almost the same way but only the temperature has changed to saturation. Both of them are formed to "chase" a higher "ground".
+4.For what values of the weighted sum does the worm turn at its maximum rate? How does this turning behavior relate to the "tumble" phase of bacterial run-tumble behavior? When w is bigger than 0.2, the change in heading would be constant. They behave in almost the same way but only the temperature has changed to saturation. Both of them are formed to "stay" in the highest "ground".
+5.How would you characterize this evolved control strategy in terms of the various types of kinesis and taxis strategies that we have discussed previously? 
+6.(Optional) Feel free to comment on anything else that you found interesting, or confusing, or describe any additional experimental tests that you made.
