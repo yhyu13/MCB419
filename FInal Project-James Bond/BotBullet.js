@@ -2,10 +2,10 @@
 // Bot
 //------
 function mouse() {
-	// mouse light handler
-	if (mouseIsPressed) {
-		dx = mouseX - bot.x;
-		dy = mouseY - bot.y;
+  // mouse light handler
+  if (mouseIsPressed) {
+    dx = mouseX - bot.x;	
+    dy = mouseY - bot.y;
     dd = sqrt(dx*dx + dy*dy);
     if (dd < 1) {
       bot.vx = 0;
@@ -14,7 +14,7 @@ function mouse() {
       bot.vx += 5 * dx / dd;
       bot.vy += 5 * dy / dd;
     }
-	}
+  }
 }
 
 function keyTyped() {
