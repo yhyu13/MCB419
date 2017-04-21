@@ -1,6 +1,40 @@
 //------
 // Bot
 //------
+function mouse() {
+	// mouse light handler
+	if (mouseIsPressed) {
+		dx = mouseX - bot.x;
+		dy = mouseY - bot.y;
+    dd = sqrt(dx*dx + dy*dy);
+    if (dd < 1) {
+      bot.vx = 0;
+      bot.vy = 0;
+    } else {
+      bot.vx += 5 * dx / dd;
+      bot.vy += 5 * dy / dd;
+    }
+	}
+}
+
+function keyTyped() {
+  if (key == 'n') {
+    reset();
+    togglePause();
+  } else if (key == 'a') {
+    bot.vx -= 5;
+  } else if (key == 's') {
+    bot.vy += 5;
+  } else if (key == 'd') {
+    bot.vx += 5;
+  } else if (key == 'w') {
+    bot.vy -= 5;
+  } else if (key == ' ') {
+    bot.vy = 0;
+    bot.xy = 0;
+  }
+}
+
 
 // Bot constructor
 function Bot(parms) {
@@ -180,6 +214,13 @@ Bot.prototype.training = function() {
 Bot.prototype.testing = function() {
   this.action = brain.forward(this.state);
   this.actionToMotor();
+};
+
+Bot.prototype.keyboard = function() {
+};
+
+Bot.prototype.mouse = function() {
+  mouse();
 };
 
 Bot.prototype.actionToMotor = function() {
