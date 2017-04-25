@@ -1,53 +1,123 @@
 //------
-// Bot
+// Bot & Enemy
 //------
-function mouse() {
-  // mouse light handler
-  if (mouseIsPressed) {
-    dx = mouseX - bot.x;	
-    dy = mouseY - bot.y;
-    dd = sqrt(dx*dx + dy*dy);
-    if (dd < 1) {
-      bot.vx = 0;
-      bot.vy = 0;
-    } else {
-      bot.vx += 5 * dx / dd;
-      bot.vy += 5 * dy / dd;
-    }
-  }
+
+function Enemy(parms) {
+  parms = parms || {};
+  
+  this.health = parms.health || 100;
+  this.y = parms.y || random(50, height / 2);
+  this.x = parms.x || random(50, width - 50);
+  this.weapon = parms.weapon || "PISTOL";
+  this.cfill = "red";
+  this.fireRate = parms.fireRate || 100; // fire 1 time per 100 frames
+  this.dia = parms.dia || 40;
 }
 
-function keyTyped() {
-  if (key == 'n') {
-    reset();
-    togglePause();
-  } else if (key == 'a') {
-    bot.vx -= 5;
-  } else if (key == 's') {
-    bot.vy += 5;
-  } else if (key == 'd') {
-    bot.vx += 5;
-  } else if (key == 'w') {
-    bot.vy -= 5;
-  } else if (key == ' ') {
-    bot.vy = 0;
-    bot.xy = 0;
+Enemy.prototype.shoot = function() {
+  targetX = bot.x;
+  targetY = bot.y;
+  myX = this.x;
+  myY = this.y;
+  
+  dd = dist(targetX,targetY,myX,myY);
+  bulletVx = bulletSpeed / dd * (targetX - myX);
+  bulletVy = bulletSpeed / dd * (targetY - myY);
+  
+  bullet = new Bullet({bulletType:this.weapon,vx:bulletVx,vy:bulletVy,x:myX,y:myY,index:bullets.length,botx:bot.x,boty:bot.y});
+  bullets.push(bullet); // add new bullet that has been shooted into the bullets[] array.
+};
+
+Enemy.prototype.update = function() {
+  if (itick % this.fireRate === 0) {
+    this.shoot();
   }
+};
+
+Enemy.prototype.display = function() {
+  push();
+  fill(this.cfill); 
+  //translate(this.x, this.y);
+  ellipse(this.x, this.y, this.dia, this.dia);
+  /*
+  textAlign(CENTER);
+  text(nf(this.sns.left, 1, 2), -this.halfWidth, -6);
+  text(nf(this.sns.right, 1, 2), this.halfWidth, -6);
+  */
+  pop();
+};
+
+
+//---------
+// Bullet
+//---------
+
+// Bullet constructor
+
+function Bullet(parms) {
+  parms = parms || {};
+  this.bulletType = parms.bulletType || "STONE";
+  this.damage = 10;
+  this.dia = 20;
+  this.color = 'white';
+  if (this.bulletType == "STONE") {
+    this.damage = 10;
+    this.dia = 20;
+  } else if (this.bulletType == "PISTOL") {
+    this.damage = 50;
+    this.dia = 10;
+    this.color = 'green';
+  }
+  this.vx = parms.vx || random(-1,1);
+  this.vy = parms.vy || random(-1,1);
+  this.x = parms.x || 0;
+  this.y = parms.y || 0;
+  this.indexInBulletArray = parms.index;
+  this.angle = Math.atan((parms.boty-this.y) / (parms.botx-this.x));
 }
+
+Bullet.prototype.reset = function() {
+  bullets.splice(this.index,1);
+};
+
+Bullet.prototype.display = function() {
+  push();
+  //noStroke();
+	
+  if (this.bulletType == "STONE") {
+    fill(this.color);
+    ellipse(this.x, this.y, this.dia, this.dia);
+  } else if (this.bulletType == "PISTOL") {
+    
+    //print(angle);
+    translate(this.x,this.y);
+    rotate(this.angle);
+    fill(this.color);
+    ellipse(0, 0, this.dia, this.dia / 2);
+  }
+  pop();
+};
+
+Bullet.prototype.update = function() {
+  this.x += this.vx;
+  this.y += this.vy;
+  if (this.x > width || this.x < 0 || this.y > height || this.y < 0) {
+    this.reset();
+  }
+};
 
 // Bot constructor
 function Bot(parms) {
   parms = parms || {};
+  
   this.halfWidth = parms.halfWidth || 10;
   this.y = parms.y || height - 150;
   this.x = parms.x || random(this.halfWidth, width-this.halfWidth);
   this.vx = 0; // x velocity
-  this.vy = 0;
+  this.vy = 0; // y velocity
   this.cfill = 'darkOrange';
   this.energy = 0;
-  this.badPellets = 0;
-  this.enableElectricWall = false;
-
+  this.beingHitted = 0;
 
   this.controllerName = '';
   if (typeof parms.controller === 'string') {
@@ -59,8 +129,7 @@ function Bot(parms) {
     right: [0, 0], 
     up: [0, 0],
     down: [0,0],
-    close: [0,0], // sns that is activated for pellets < 30 units.
-    wall: [0]
+    close: [0,0] // sns that is activated for pellets < 30 units.
   };
 
   // action values
@@ -80,15 +149,13 @@ function Bot(parms) {
 // a function for bot to consume pellets
 Bot.prototype.consume = function() {
   // pellet consumption
-  for (var i = 0; i < pellets.length; i++) {
-    var dcheck = this.halfWidth + pellets[i].dia / 2;
+  for (var i = 0; i < bullets.length; i++) {
+    var dcheck = this.halfWidth + bullets[i].dia / 2;
       // comsume == TRUE in the case below
-      if (dist(pellets[i].x,pellets[i].y,this.x,this.y) < dcheck){
-      this.reward += pellets[i].value;
-      if (pellets[i].value < 0) {
-        this.badPellets += 1;
-      }
-      pellets[i].reset();
+      if (dist(bullets[i].x,bullets[i].y,this.x,this.y) < dcheck){
+      this.reward -= bullets[i].damage;
+      this.beingHitted += 1;
+      bullets[i].reset();
     }
   }
   this.energy += this.reward;
@@ -102,42 +169,26 @@ Bot.prototype.update = function() {
   
   // x-axis motion
   this.vx *= 0.98;
-  this.vx = constrain(this.vx, -5, 5);
+  this.vx = constrain(this.vx, -2.5, 2.5);
   this.x += this.vx;
   if (this.x < this.halfWidth) {
     this.x = this.halfWidth;
-    // punish hitting the wall
-    if (this.enableElectricWall) {
-      //this.vx = 10;
-      this.reward -= 2 * this.halfWidth / min(this.x,this.y,width - this.x, height - this.y);
-    }
+    this.vx = 0;
   } else if (this.x > width - this.halfWidth) {
     this.x = width - this.halfWidth;
-    // punish hitting the wall
-    if (this.enableElectricWall) {
-      //this.vx = -10;
-      this.reward -= 2 * this.halfWidth / min(this.x,this.y,width - this.x, height - this.y);
-    }
+    this.vx = 0;
   }
   
   // y-axis motion
   this.vy *= 0.98;
-  this.vy = constrain(this.vy, -5, 5);
+  this.vy = constrain(this.vy, -2.5, 2.5);
   this.y += this.vy;
   if (this.y < this.halfWidth) {
     this.y = this.halfWidth;
-    // punish hitting the wall
-    if (this.enableElectricWall) {
-      //this.vy = 10;
-      this.reward -= 2 * this.halfWidth / min(this.x,this.y,width - this.x, height - this.y);
-    }
+    this.vy = 0;
   } else if (this.y > height - this.halfWidth) {
     this.y = height - this.halfWidth;
-    // punish hitting the wall
-    if (this.enableElectricWall) {
-      //this.vy = -10;
-      this.reward -= 2 * this.halfWidth / min(this.x,this.y,width - this.x, height - this.y);
-    }
+    this.vy = 0;
   }
   
   this.consume();
@@ -154,26 +205,30 @@ Bot.prototype.updateSensors = function() {
   this.sns.up = [0, 0];
   this.sns.down = [0, 0];
   this.sns.close = [0, 0];
-  this.sns.wall = [0];
   
-  if (this.x - 0 < 50 || width - this.x < 50 || this.y - 0 < 50 || height - this.y < 50) {
-    this.sns.wall[0] += 2 * this.halfWidth / min(this.x,this.y,width - this.x, height - this.y);
+  for (var i=0; i < bullets.length; i++) {
+    this.sns.left[1] += 30.0 / dist(this.x - this.halfWidth, this.y, bullets[i].x, bullets[i].y);
+    this.sns.right[1] += 30.0 / dist(this.x + this.halfWidth, this.y, bullets[i].x, bullets[i].y);
+    this.sns.up[1] += 30.0 / dist(this.x, this.halfWidth + this.y, bullets[i].x, bullets[i].y);
+    this.sns.down[1] += 30.0 / dist(this.x, this.y - this.halfWidth, bullets[i].x, bullets[i].y);
+    if (dist(this.x, this.y, bullets[i].x, bullets[i].y) < 60){
+    this.sns.close[1] += 30.0 / dist(this.x, this.y, bullets[i].x, bullets[i].y);
+    }
   }
   
-  for (var i=0; i < pellets.length; i++) {
-    var idx = (pellets[i].color == 'red') ? 0 : 1;
-    this.sns.left[idx] += 30.0 / dist(this.x - this.halfWidth, this.y, pellets[i].x, pellets[i].y);
-    this.sns.right[idx] += 30.0 / dist(this.x + this.halfWidth, this.y, pellets[i].x, pellets[i].y);
-    this.sns.up[idx] += 30.0 / dist(this.x, this.halfWidth + this.y, pellets[i].x, pellets[i].y);
-    this.sns.down[idx] += 30.0 / dist(this.x, this.y - this.halfWidth, pellets[i].x, pellets[i].y);
-    if (dist(this.x, this.y, pellets[i].x, pellets[i].y) < 60){
-    this.sns.close[idx] += 30.0 / dist(this.x, this.y, pellets[i].x, pellets[i].y);
+  for (var j=0; j < enemies.length; j++) {
+    this.sns.left[0] += 30.0 / dist(this.x - this.halfWidth, this.y, enemies[j].x, enemies[j].y);
+    this.sns.right[0] += 30.0 / dist(this.x + this.halfWidth, this.y, enemies[j].x, enemies[j].y);
+    this.sns.up[0] += 30.0 / dist(this.x, this.halfWidth + this.y, enemies[j].x, enemies[j].y);
+    this.sns.down[0] += 30.0 / dist(this.x, this.y - this.halfWidth, enemies[j].x, enemies[j].y);
+    if (dist(this.x, this.y, enemies[j].x, enemies[j].y) < 60){
+    this.sns.close[0] += 30.0 / dist(this.x, this.y, enemies[j].x, enemies[j].y);
     }
   }
 };
 
 Bot.prototype.getSensorState = function() {
-  return this.sns.left.concat(this.sns.right).concat(this.sns.up).concat(this.sns.down).concat(this.sns.close).concat(this.sns.wall);
+  return this.sns.left.concat(this.sns.right).concat(this.sns.up).concat(this.sns.down).concat(this.sns.close);
 };
 
 Bot.prototype.display = function() {
@@ -193,7 +248,6 @@ Bot.prototype.setController = function(name) {
   this.controllerName = name;
   this.controller = this[name];
 };
-
 
 //-------------
 // CONTROLLERS 
@@ -224,73 +278,15 @@ Bot.prototype.mouse = function() {
 
 Bot.prototype.actionToMotor = function() {
   if (this.action == this.LEFT) {
-    this.vx -= 5;
+    this.vx -= 2;
   } else if (this.action == this.RIGHT) {
-    this.vx += 5;
+    this.vx += 2;
   } else if (this.action == this.STOP) {
     this.vx = 0;
     this.vy = 0;
   } else if (this.action == this.UP) {
-    this.vy += 5;
+    this.vy += 2;
   } else if (this.action == this.DOWN) {
-    this.vy -= 5;
+    this.vy -= 2;
   }
-};
-
-
-//---------
-// Pellet
-//---------
-
-// Pellet constructor
-
-function Pellet() {
-    this.reset();
-}
-
-Pellet.prototype.display = function() {
-	noStroke();
-	fill(this.color);
-	ellipse(this.x, this.y, this.dia, this.dia);
-};
-
-Pellet.prototype.reset = function() {
-  
-  this.dia = 10;
-  this.color = (random() < 0.3) ? 'red' : 'green';  // red = bad (-1); green = good (+1)
-  this.value = (this.color == 'red') ? -1 : 1;
-  
-  var xbuffer = (this.color == 'red') ? 10 : 10;  // provide safe zones from red pellets
-  if (random() < 0.5) {
-    if (random() < 0.5) {
-      this.x = random(xbuffer, width - xbuffer);
-      this.y = 10;
-      this.vy = random(2,4);
-      this.vx = random(-1,1);
-    } else {
-      this.x = random(xbuffer, width - xbuffer);
-      this.y = height - 10;
-      this.vy = -random(2,4);
-      this.vx = random(-1,1);
-    }
-  } else {
-    if (random() < 0.5) {
-      this.x = 10;
-      this.y = random(xbuffer, width - xbuffer);
-      this.vy = random(-1,1);
-      this.vx = random(2,4);
-    } else {
-      this.x = width - 10;
-      this.y = random(xbuffer, width - xbuffer);
-      this.vy = random(-1,1);
-      this.vx = -random(2,4);
-    }
-  }
-};
-
-Pellet.prototype.update = function() {
-	this.y += this.vy;
-	if (this.y > height || this.y < 0) this.reset();
-  this.x += this.vx;
-	if (this.x > width || this.x < 0) this.reset();
 };
