@@ -1,5 +1,7 @@
 This is the final project of MCB419 based on HW4 & HW13, which are bacteria kinesis and neural network reinforcement learning (NNRL). I call it "Dodge, Feast Temperature, and Electric Fence". They are the four elements of the enviornment that I built for the agent. Let's see what it can do!
 
+Run/Click/Download "final project.html" to check out the latest version.
+
 Introduction
 
 This introduction goes in a form of Q & A: 
@@ -15,16 +17,16 @@ A: It used be: Whether or not the agent can beat me hard!, which I thought is fu
 Model description / Methods
 Describe specific implementation details here. It's important to have a well-defined specification before you start coding. Ideally you should make these detailed enough so that somebody else could read them and have enough information to recreate the model. (NOTE: you don't necessarily have to stick to these as the project develops. Most likely there will likely be changes, but this gives you a good starting point.)
 
-Environment: key features of the environment
-Agent(s): key features of the agent(s) in the model The agent uses Deep Q-learning to gain reward and avoid pain in a relatively complex enviroment.
-Sensors: sensory system description; describe sensor types, number, coding, etc. (Described above)
-Actions: motor system description; describe the actions that the agent can execute (Described above)
-Controller: describe the controller architecture (e.g. FSM, neural network), what are the free/adjustable parameters? The number of hidden layers, the number of nuerons and activation fucntions, and leanring rate, batch size, etc.
-Adaptation: will the system evolve or learn to improve performance? If so, how. The agent will first collect enough experience. Then randomly retrive those experience (DeepMind calls it dream?) and try to avoid actions that leads lower reward and excute actions that obtain gains. Finally, through ~100 iterations, the agent shall behave better than a human player.
-Multi-agent interactions: describe interactions between agents if relevant (communication, predator-prey, mating, etc.) None
-Graphical design: how do you plan to represent the above elements on the screen (Showed above: in progess)
-User-interface: how will the user interact with the model Users can either play with keyboard or mouse. They also train network and either save or load existing networks.
-Quantitative analysis: how will you present and analyze the results (tables, graphs, histograms) (The table below)
+1. Environment: key features of the environment
+2. Agent(s): key features of the agent(s) in the model The agent uses Deep Q-learning to gain reward and avoid pain in a relatively complex enviroment.
+3. Sensors: sensory system description; describe sensor types, number, coding, etc. (Described above)
+4. Actions: motor system description; describe the actions that the agent can execute (Described above)
+5. Controller: describe the controller architecture (e.g. FSM, neural network), what are the free/adjustable parameters? The number of hidden layers, the number of nuerons and activation fucntions, and leanring rate, batch size, etc.
+6. Adaptation: will the system evolve or learn to improve performance? If so, how. The agent will first collect enough experience. Then randomly retrive those experience (DeepMind calls it dream?) and try to avoid actions that leads lower reward and excute actions that obtain gains. Finally, through ~100 iterations, the agent shall behave better than a human player.
+7. Multi-agent interactions: describe interactions between agents if relevant (communication, predator-prey, mating, etc.) None
+8. Graphical design: how do you plan to represent the above elements on the screen (Showed above: in progess)
+9. User-interface: how will the user interact with the model Users can either play with keyboard or mouse. They also train network and either save or load existing networks.
+10. Quantitative analysis: how will you present and analyze the results (tables, graphs, histograms) (The table below)
 More ...anything else you want to add... It must be fun!XD
 
 Javascript code organization
