@@ -1,6 +1,6 @@
 This is the final project of MCB419 based on HW4 & HW13, which are bacteria kinesis and neural network reinforcement learning (NNRL). I call it "Dodge, Feast Temperature, and Electric Fence". They are the four elements of the enviornment that I built for the agent. Let's see what it can do!
 
-Run/Click/Download "final project.html" to check out the latest version.
+Run/Click/Download "final project.html" to check out the latest version. Otherwise, click this link: http://jsbin.com/yiqiyuc/32/edit?output
 
 Introduction
 
